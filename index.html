@@ -1,0 +1,2278 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英語学習システム - SM-2間隔反復</title>
+    <style>
+        :root {
+            /* 青と黒（＋白背景・無彩色）のみ */
+            --bg: #ffffff;
+            --text-main: #000000;
+            --text-sub: #444444;
+            --text-muted: #777777;
+            --link-blue: #0044cc;
+            --link-hover: #002288;
+            --border-light: #cccccc;
+            --border-dotted: #777777;
+            --bg-subtle: #f8f9fa;
+            --bg-active: #eef2fa;
+            --radius: 2px;
+        }
+
+        /* 全要素を明朝体（Serif）に統一 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Yu Mincho", "YuMincho", "BIZ UDPMincho", "MS PMincho", "Times New Roman", Georgia, serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-main);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        /* 全画面レイアウト */
+        .app-layout {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* トップヘッダー */
+        .site-header {
+            width: 100%;
+            border-bottom: 1px solid var(--border-light);
+            background: #fff;
+            padding: 10px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .site-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.02em;
+        }
+        .site-title .version-tag {
+            font-size: 11px;
+            font-weight: normal;
+            border: 1px solid var(--border-light);
+            padding: 1px 5px;
+            border-radius: var(--radius);
+            color: var(--text-sub);
+        }
+
+        /* ヘッダー操作アイコン群 */
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .user-label {
+            font-size: 13px;
+            margin-right: 6px;
+            white-space: nowrap;
+        }
+
+        .icon-btn {
+            background: none;
+            border: 1px solid var(--border-light);
+            color: var(--text-main);
+            padding: 5px 8px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            font-size: 12px;
+            transition: all 0.1s;
+            height: 32px;
+        }
+        .icon-btn:hover {
+            border-color: var(--link-blue);
+            color: var(--link-blue);
+            background: var(--bg-active);
+        }
+        .icon-btn.active {
+            border-color: var(--link-blue);
+            color: var(--link-blue);
+            font-weight: bold;
+        }
+        .icon-btn svg {
+            width: 16px;
+            height: 16px;
+            stroke: currentColor;
+            fill: none;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+        .icon-btn .btn-text {
+            display: inline;
+        }
+
+        /* ナビゲーションバー */
+        .site-nav {
+            width: 100%;
+            border-bottom: 1px solid var(--border-light);
+            background: var(--bg-subtle);
+            padding: 0 24px;
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+        }
+
+        .site-nav button {
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: 10px 18px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-sub);
+            cursor: pointer;
+            border-radius: 0;
+            white-space: nowrap;
+            transition: color 0.1s;
+        }
+        .site-nav button:hover {
+            color: var(--link-blue);
+        }
+        .site-nav button.active {
+            color: var(--link-blue);
+            border-bottom-color: var(--link-blue);
+            background: #fff;
+        }
+        .nav-count {
+            display: inline-block;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 0 4px;
+            margin-left: 2px;
+        }
+
+        /* メインコンテンツエリア */
+        .main-content {
+            width: 100%;
+            flex: 1;
+            padding: 24px 24px 48px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        /* 見出し（点線区切り） */
+        h1, h2, h3, h4 {
+            color: var(--text-main);
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .section-heading {
+            font-size: 21px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            border-bottom: 1px dotted var(--border-dotted);
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+        }
+        .section-desc {
+            font-size: 13px;
+            color: var(--text-sub);
+            margin-bottom: 20px;
+        }
+
+        /* ボタン */
+        button.btn {
+            background-color: var(--link-blue);
+            color: #ffffff;
+            border: 1px solid var(--link-blue);
+            padding: 7px 16px;
+            border-radius: var(--radius);
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: background 0.1s;
+        }
+        button.btn:hover {
+            background-color: var(--link-hover);
+            border-color: var(--link-hover);
+        }
+        button.btn-secondary {
+            background-color: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-light);
+        }
+        button.btn-secondary:hover {
+            background-color: var(--bg-subtle);
+            border-color: #999;
+        }
+        .btn-link {
+            background: none;
+            border: none;
+            color: var(--link-blue);
+            text-decoration: underline;
+            cursor: pointer;
+            font-size: 13px;
+            padding: 0;
+            display: inline-block;
+        }
+        .btn-link:hover { color: var(--link-hover); }
+
+        /* 「次の問題に進む」用の目立つアクションボタン */
+        .btn-next-action {
+            background-color: var(--link-blue);
+            color: #fff;
+            border: 1px solid var(--link-blue);
+            padding: 10px 24px;
+            font-size: 15px;
+            font-weight: bold;
+            border-radius: var(--radius);
+            cursor: pointer;
+            margin-top: 14px;
+        }
+        .btn-next-action:hover {
+            background-color: var(--link-hover);
+        }
+
+        /* フォーム入力 */
+        input[type="text"], input[type="password"], textarea {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius);
+            font-size: 14px;
+            color: var(--text-main);
+            background: #fff;
+            margin-bottom: 12px;
+        }
+        textarea {
+            font-family: inherit;
+            resize: vertical;
+            min-height: 80px;
+        }
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--link-blue);
+            box-shadow: 0 0 0 1px var(--link-blue);
+        }
+
+        /* ログインボックス */
+        .auth-container {
+            max-width: 360px;
+            margin: 60px auto;
+            padding: 24px;
+            border: 1px solid var(--border-light);
+        }
+
+        /* データサマリー */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        .stat-block {
+            border: 1px solid var(--border-light);
+            background: var(--bg-subtle);
+            padding: 14px 18px;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-bottom: 4px;
+        }
+        .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-main);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* テーブル */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+            margin-top: 10px;
+        }
+        .data-table th, .data-table td {
+            padding: 10px 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-light);
+        }
+        .data-table th {
+            background: var(--bg-subtle);
+            font-weight: 600;
+            color: var(--text-sub);
+            border-top: 1px solid var(--border-light);
+        }
+        .data-table tr:hover td {
+            background-color: #fafbfc;
+        }
+
+        /* 単語帳グリッド */
+        .notebook-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+        .notebook-card {
+            border: 1px solid var(--border-light);
+            background: #fff;
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+        .notebook-card:hover {
+            border-color: #888;
+        }
+        .notebook-card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+        .notebook-card-meta {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-bottom: 16px;
+        }
+
+        .notebook-create-box {
+            border: 1px dashed var(--border-dotted);
+            padding: 24px;
+            text-align: center;
+            background: var(--bg-subtle);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 13px;
+            color: var(--link-blue);
+            min-height: 130px;
+        }
+        .notebook-create-box:hover {
+            background: var(--bg-active);
+        }
+
+        /* モード選択 */
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .mode-box {
+            border: 1px solid var(--border-light);
+            padding: 20px;
+            cursor: pointer;
+            background: #fff;
+        }
+        .mode-box:hover {
+            border-color: var(--link-blue);
+            background: var(--bg-active);
+        }
+        .mode-box h4 {
+            color: var(--link-blue);
+            margin-bottom: 6px;
+            font-size: 16px;
+        }
+        .mode-box p {
+            font-size: 12px;
+            color: var(--text-sub);
+        }
+
+        /* プレイエリア */
+        .play-area {
+            border: 1px solid var(--border-light);
+            padding: 24px;
+            background: #fff;
+            margin-top: 14px;
+        }
+        .phrase-header-row {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .phrase-main-text {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text-main);
+            line-height: 1.5;
+        }
+
+        /* 判定表示（◯ / ✕ の超大型表示） */
+        .judgment-symbol {
+            font-size: 48px;
+            line-height: 1;
+            margin-bottom: 4px;
+            display: inline-block;
+        }
+        .judgment-symbol.correct {
+            color: var(--link-blue);
+        }
+        .judgment-symbol.wrong {
+            color: var(--text-main);
+        }
+
+        /* 4択クイズのレイアウト */
+        .quiz-choice-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 24px 0;
+        }
+        .quiz-choice-btn {
+            background: #ffffff;
+            border: 1px solid var(--border-light);
+            padding: 16px 20px;
+            font-size: 16px;
+            text-align: left;
+            cursor: pointer;
+            border-radius: var(--radius);
+            color: var(--text-main);
+            transition: all 0.1s;
+        }
+        .quiz-choice-btn:hover {
+            border-color: var(--link-blue);
+            background: var(--bg-active);
+            color: var(--link-blue);
+        }
+
+        /* 並べ替えパーツ */
+        .word-pool, .answer-zone {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            min-height: 52px;
+            padding: 10px;
+            border: 1px solid var(--border-light);
+            margin-bottom: 16px;
+            align-items: center;
+            background: #fff;
+        }
+        .word-pool { background: var(--bg-subtle); }
+        .answer-zone { border-style: dashed; }
+
+        .word-chip {
+            background: #ffffff;
+            color: var(--text-main);
+            border: 1px solid var(--border-light);
+            padding: 6px 14px;
+            border-radius: var(--radius);
+            cursor: pointer;
+            user-select: none;
+            font-size: 15px;
+        }
+        .word-chip:hover {
+            border-color: var(--link-blue);
+            color: var(--link-blue);
+            background: var(--bg-active);
+        }
+
+        /* マッチング */
+        .matching-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin: 20px 0;
+        }
+        .matching-col { display: flex; flex-direction: column; gap: 8px; }
+        .matching-item {
+            padding: 12px;
+            background: #fff;
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius);
+            cursor: pointer;
+            text-align: center;
+            font-size: 14px;
+        }
+        .matching-item:hover { border-color: #888; }
+        .matching-item.selected {
+            background: var(--bg-active);
+            border-color: var(--link-blue);
+            color: var(--link-blue);
+            font-weight: 600;
+        }
+        .matching-item.matched {
+            background: #f5f5f5;
+            color: #999999;
+            border-color: #e5e5e5;
+            cursor: default;
+            text-decoration: line-through;
+            pointer-events: none;
+        }
+
+        /* モーダル */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        .modal-body {
+            background: #fff;
+            border: 1px solid #777;
+            width: 100%;
+            max-width: 840px;
+            max-height: 90vh;
+            overflow-y: auto;
+            padding: 24px;
+        }
+
+        .hidden { display: none !important; }
+        .flex-row { display: flex; align-items: center; justify-content: space-between; }
+
+        /* スマホ向けレスポンシブ最適化 */
+        @media (max-width: 768px) {
+            .site-header { padding: 8px 12px; }
+            .site-title { font-size: 16px; }
+            .site-title .version-tag { display: none; }
+            .header-actions { gap: 4px; }
+            .icon-btn .btn-text { display: none; } /* スマホ時はアイコンのみにして潰れを防止 */
+            .icon-btn { padding: 6px; }
+            .site-nav { padding: 0 12px; }
+            .main-content { padding: 16px 12px 36px; }
+            .stats-row { grid-template-columns: 1fr; }
+            .mode-grid { grid-template-columns: 1fr; }
+            .quiz-choice-grid { grid-template-columns: 1fr; }
+            .matching-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="app-layout">
+    <!-- 認証（未ログイン時） -->
+    <div id="view-auth" class="auth-container">
+        <h2 id="auth-title" style="font-size: 18px; margin-bottom: 8px;">ログイン</h2>
+        <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 16px;">間隔反復学習システム (SM-2)</p>
+        <input type="text" id="auth-username" placeholder="ユーザー名">
+        <input type="password" id="auth-password" placeholder="パスワード">
+        <button onclick="App.handleAuth()" class="btn" style="width: 100%;" id="auth-submit-btn">ログイン</button>
+        <div style="margin-top: 14px; text-align: center;">
+            <button class="btn-link" id="auth-toggle-link" onclick="App.toggleAuthMode()">新規アカウントを作成する</button>
+        </div>
+    </div>
+
+    <!-- メインアプリケーション（ログイン時） -->
+    <div id="view-main" class="hidden">
+        <header class="site-header">
+            <div class="site-title">
+                Repetit <span class="version-tag">SM-2</span>
+            </div>
+
+            <!-- コンパクト・アイコンアクションバー -->
+            <div class="header-actions">
+                <span class="user-label"><strong id="display-user"></strong></span>
+
+                <!-- クラウド同期ボタン -->
+                <button class="icon-btn" onclick="App.syncOnlineNotebooks()" title="クラウド更新・他端末同期">
+                    <svg viewBox="0 0 24 24"><path d="M21.5 15a4.5 4.5 0 0 0-3-4.24V10a6 6 0 0 0-11.83-1.42A4 4 0 0 0 3 12.5 4 4 0 0 0 7 16.5h1"></path><polyline points="16 16 19 19 22 16"></polyline><line x1="19" y1="13" x2="19" y2="19"></line></svg>
+                    <span class="btn-text">同期</span>
+                </button>
+
+                <!-- 開発者権限トグル -->
+                <button class="icon-btn" id="dev-auth-btn" onclick="App.handleDevAuthToggle()" title="開発者権限コード(0064)">
+                    <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <span class="btn-text" id="dev-auth-text">開発</span>
+                </button>
+
+                <!-- 検証モードトグル -->
+                <button class="icon-btn" id="sim-mode-btn" onclick="App.toggleFastSimulation()" title="検証用秒速モード切替">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    <span class="btn-text" id="sim-mode-text">検証</span>
+                </button>
+
+                <!-- ログアウト -->
+                <button class="icon-btn" onclick="App.logout()" title="ログアウト">
+                    <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                    <span class="btn-text">退出</span>
+                </button>
+            </div>
+        </header>
+
+        <nav class="site-nav">
+            <button id="nav-home" class="active" onclick="App.switchTab('home')">ホーム</button>
+            <button id="nav-files" onclick="App.switchTab('files')">単語帳一覧</button>
+            <button id="nav-review" onclick="App.switchTab('review')">
+                自動復習 [<span id="review-count" class="nav-count">0</span>]
+            </button>
+        </nav>
+
+        <main class="main-content">
+            <!-- タブ: ホーム -->
+            <div id="tab-home" class="tab-content">
+                <div class="section-heading">
+                    <span>学習統計サマリー</span>
+                </div>
+                <div class="stats-row">
+                    <div class="stat-block">
+                        <div class="stat-label">総解答セッション数</div>
+                        <div class="stat-value" id="stat-total">0</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-label">全体正解率</div>
+                        <div class="stat-value" id="stat-accuracy">0%</div>
+                    </div>
+                    <div class="stat-block">
+                        <div class="stat-label">単語帳数 (公式・共有・独自)</div>
+                        <div class="stat-value" id="stat-folders">0</div>
+                    </div>
+                </div>
+
+                <div class="section-heading">
+                    <span>最近の学習履歴</span>
+                    <span style="font-size: 12px; font-weight: normal; color: var(--text-sub);">最新10件</span>
+                </div>
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 160px;">学習日時</th>
+                            <th style="width: 160px;">単語帳</th>
+                            <th style="width: 120px;">形式</th>
+                            <th>単語 / 英文</th>
+                            <th style="width: 200px;">判定 / 所要時間</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-list"></tbody>
+                </table>
+            </div>
+
+            <!-- タブ: 単語帳一覧 -->
+            <div id="tab-files" class="tab-content hidden">
+                <div class="section-heading">
+                    <span>単語帳一覧</span>
+                    <div style="display: flex; gap: 8px;">
+                        <button id="btn-create-online-nb" class="btn hidden" onclick="App.showCreateOnlineNotebookModal()">[開発者] オンライン共通単語帳を作成</button>
+                        <button onclick="App.showCreateNotebookModal()" class="btn">新規単語帳を作成</button>
+                    </div>
+                </div>
+                <div class="notebook-grid">
+                    <div class="notebook-create-box" onclick="App.showCreateNotebookModal()">
+                        <strong>[+] 新規単語帳を作成</strong>
+                        <span style="font-size: 11px; color: var(--text-sub); margin-top: 4px;">新しいカスタム単語帳を追加</span>
+                    </div>
+                    <div id="notebook-list-container" style="display: contents;"></div>
+                </div>
+            </div>
+
+            <!-- タブ: 自動復習 & 実行 -->
+            <div id="tab-review" class="tab-content hidden">
+                <!-- モード選択ビュー -->
+                <div id="review-mode-select-view">
+                    <div class="section-heading">
+                        <span id="review-session-title">学習形式の選択</span>
+                    </div>
+                    <p id="review-mode-desc" class="section-desc"></p>
+                    <div class="mode-grid">
+                        <div class="mode-box" onclick="App.selectPlayMode('mixed')">
+                            <h4>1. 並べ替え ＆ 単語入力 ミックス演習</h4>
+                            <p>「文節並べ替え」と、意味から英単語を直接入力する「単語記述」が状況に応じて自動ミックス出題されます。</p>
+                        </div>
+                        <div class="mode-box" onclick="App.selectPlayMode('choice')">
+                            <h4>2. 四択クイズ (英単語・意味判定)</h4>
+                            <p>英単語の意味を素早く4択から選択します。語彙の暗記と引き出し速度向上に最適です。</p>
+                        </div>
+                        <div class="mode-box" onclick="App.selectPlayMode('matching')">
+                            <h4>3. 日英マッチングタスク</h4>
+                            <p>複数の日・英ペアを一度に照合し、脳内インデックスを整理します。</p>
+                        </div>
+                    </div>
+                    <button class="btn btn-secondary" onclick="App.switchTab('files')">単語帳一覧に戻る</button>
+                </div>
+
+                <!-- プレイ: 並べ替え & 単語入力 ミックス画面 -->
+                <div id="play-container-mixed" class="hidden">
+                    <div class="flex-row" style="margin-bottom: 12px; font-size: 13px;">
+                        <div>
+                            <span id="mixed-progress">問題 0 / 0</span>
+                            <span id="mixed-type-badge" style="margin-left: 8px; font-weight: 600;"></span>
+                            <span id="mixed-pool-badge" style="margin-left: 8px; font-weight: 600;"></span>
+                        </div>
+                        <div>
+                            <span>経過時間: <strong id="mixed-timer" style="font-variant-numeric: tabular-nums;">0.0</strong>s</span>
+                            <span style="margin-left: 16px;">単語帳: <span id="mixed-notebook-name">-</span></span>
+                        </div>
+                    </div>
+
+                    <div class="play-area">
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">日本語の意味</div>
+                        <div id="mixed-japanese" class="phrase-main-text">-</div>
+
+                        <!-- サブエリアA: 単語入力問題 -->
+                        <div id="mixed-sub-input" class="hidden">
+                            <div style="font-size: 13px; color: var(--text-sub); margin-bottom: 8px;">
+                                上記の意味に当てはまる英単語を入力してください: <span id="mixed-input-hint" style="color:var(--text-muted); font-size: 12px;"></span>
+                            </div>
+                            <div style="max-width: 480px;">
+                                <input type="text" id="mixed-word-input" placeholder="英単語を入力してEnter" autocomplete="off" autocapitalize="none" style="font-size: 18px; padding: 10px 12px;">
+                            </div>
+                            <div style="display: flex; gap: 8px; margin-top: 14px;" id="mixed-input-action-bar">
+                                <button onclick="App.checkMixedInputAnswer()" class="btn" style="min-width: 140px;">解答を確認する</button>
+                                <button onclick="App.skipQuestion()" class="btn btn-secondary">スキップ</button>
+                            </div>
+                        </div>
+
+                        <!-- サブエリアB: 文節並べ替え問題 -->
+                        <div id="mixed-sub-reorder" class="hidden">
+                            <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 4px;">解答スロット (クリックで取り消し)</div>
+                            <div class="answer-zone" id="mixed-answer-zone"></div>
+
+                            <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 4px;">単語プール</div>
+                            <div class="word-pool" id="mixed-word-pool"></div>
+
+                            <div style="display: flex; gap: 8px; margin-top: 20px;" id="mixed-reorder-action-bar">
+                                <button onclick="App.checkMixedReorderAnswer()" class="btn" style="min-width: 140px;">解答を確認する</button>
+                                <button onclick="App.resetCurrentQuestion()" class="btn btn-secondary">リセット</button>
+                                <button onclick="App.skipQuestion()" class="btn btn-secondary">スキップ</button>
+                            </div>
+                        </div>
+
+                        <!-- 結果表示エリア（◯ / ✕、解説、手動遷移ボタン） -->
+                        <div id="mixed-result" style="margin-top: 16px;"></div>
+                        <div id="mixed-next-btn-container" class="hidden" style="margin-top: 16px;">
+                            <button id="mixed-next-btn" class="btn-next-action" onclick="App.goToNextQuestion()">次の問題に進む (Enter)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- プレイ: 四択クイズ -->
+                <div id="play-container-choice" class="hidden">
+                    <div class="flex-row" style="margin-bottom: 12px; font-size: 13px;">
+                        <div>
+                            <span id="choice-progress">問題 0 / 0</span>
+                            <span id="choice-pool-badge" style="margin-left: 8px; font-weight: 600;"></span>
+                        </div>
+                        <div>
+                            <span>経過時間: <strong id="choice-timer" style="font-variant-numeric: tabular-nums;">0.0</strong>s</span>
+                            <span style="margin-left: 16px;">単語帳: <span id="choice-notebook-name">-</span></span>
+                        </div>
+                    </div>
+
+                    <div class="play-area">
+                        <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 4px;">出題語句</div>
+                        <div class="phrase-header-row">
+                            <span id="choice-english" class="phrase-main-text">-</span>
+                            <button id="choice-speech-btn" class="btn-link" style="font-size: 14px;">[発音を聴く]</button>
+                        </div>
+
+                        <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 6px;">正しい和訳を選択してください:</div>
+                        <div class="quiz-choice-grid" id="choice-options-container"></div>
+
+                        <div style="display: flex; gap: 8px; margin-top: 14px;" id="choice-skip-bar">
+                            <button onclick="App.skipQuestion()" class="btn btn-secondary">スキップ</button>
+                        </div>
+                        <div id="choice-result" style="margin-top: 16px;"></div>
+                        <div id="choice-next-btn-container" class="hidden" style="margin-top: 16px;">
+                            <button class="btn-next-action" onclick="App.goToNextQuestion()">次の問題に進む (Enter)</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- プレイ: マッチング -->
+                <div id="play-container-matching" class="hidden">
+                    <div class="flex-row" style="margin-bottom: 12px; font-size: 13px;">
+                        <span>ペアマッチングタスク</span>
+                        <span>単語帳: <span id="matching-notebook-name">-</span></span>
+                    </div>
+
+                    <div class="play-area">
+                        <p class="section-desc">日本語と英語のアイテムをそれぞれ1つずつ選択してペアを作成してください。</p>
+                        <div class="matching-grid">
+                            <div class="matching-col" id="matching-jp-column"></div>
+                            <div class="matching-col" id="matching-en-column"></div>
+                        </div>
+                        <button onclick="App.skipQuestion()" class="btn btn-secondary" style="width: 100%;">セッションを中断</button>
+                        <div id="matching-result" style="margin-top: 16px; text-align: center; font-size: 14px; font-weight: 600;"></div>
+                        <div id="matching-next-btn-container" class="hidden" style="margin-top: 16px; text-align: center;">
+                            <button class="btn-next-action" onclick="App.finishMatchingSession()">完了してホームに戻る</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 復習対象なしメッセージ -->
+                <div id="no-review-msg" class="hidden" style="padding: 40px 0; text-align: center;">
+                    <p style="color: var(--text-sub); margin-bottom: 14px;">現在、復習期日を迎えているフレーズ・単語はありません。</p>
+                    <button class="btn btn-secondary" onclick="App.switchTab('files')">単語帳一覧へ戻る</button>
+                </div>
+            </div>
+        </main>
+    </div>
+</div>
+
+<!-- モーダル: 単語帳作成 -->
+<div id="modal-create-notebook" class="modal hidden">
+    <div class="modal-body" style="max-width: 480px;">
+        <h3 id="create-modal-title" style="margin-bottom: 12px; font-size: 16px;">新規単語帳の作成</h3>
+        <input type="text" id="notebook-title-input" placeholder="単語帳名 (例: TOEIC頻出動詞)">
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px;">
+            <button onclick="App.closeCreateNotebookModal()" class="btn btn-secondary">キャンセル</button>
+            <button onclick="App.createNotebook()" class="btn">作成</button>
+        </div>
+    </div>
+</div>
+
+<!-- モーダル: 単語帳編集 -->
+<div id="modal-manage-notebook" class="modal hidden">
+    <div class="modal-body">
+        <div class="flex-row" style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: baseline; gap: 8px;">
+                <h3 id="manage-notebook-title" style="font-size: 18px;">単語帳の編集</h3>
+                <button class="btn-link" onclick="App.renameSelectedNotebook()">[単語帳名を変更]</button>
+                <button id="btn-publish-online" class="btn-link hidden" onclick="App.publishSelectedNotebookToOnline()">[クラウドへ公開・同期]</button>
+            </div>
+            <span id="manage-system-badge" style="font-size: 12px; color: var(--text-sub);"></span>
+        </div>
+
+        <!-- 個別登録エリア -->
+        <div style="background: var(--bg-subtle); border: 1px solid var(--border-light); padding: 16px; margin-bottom: 16px;">
+            <div style="font-weight: 600; font-size: 13px; margin-bottom: 4px;">新しい単語・英文の追加</div>
+            <div style="font-size: 12px; color: var(--text-sub); margin-bottom: 10px;">
+                日本語を入力して欄外をクリックすると自動英訳されます。単語単体（例: 改善する）の入力も可能です。
+            </div>
+            <input type="text" id="input-japanese" placeholder="日本語の意味 (例: 重要な、不可欠な)" onchange="App.handleGoogleTranslateAutofill()">
+            <div id="translation-status-msg" style="font-size: 12px; margin-bottom: 6px; min-height: 16px;"></div>
+            <input type="text" id="input-english" placeholder="英語 (例: essential または I appreciate your help.)">
+            <button onclick="App.addQuestionToNotebook()" class="btn" style="width: 100%;">登録する</button>
+        </div>
+
+        <!-- 一括CSVインポート -->
+        <div style="border: 1px dashed var(--border-dotted); padding: 12px; margin-bottom: 20px;">
+            <div class="flex-row">
+                <span style="font-size: 13px; font-weight: 600;">CSV / テキスト一括登録</span>
+                <button class="btn-link" onclick="App.toggleBulkImport()">[入力枠を開く/閉じる]</button>
+            </div>
+            <div id="bulk-import-container" class="hidden" style="margin-top: 10px;">
+                <p style="font-size: 12px; color: var(--text-sub); margin-bottom: 6px;">
+                    1行に「英語,日本語」の形式で入力してください（カンマまたはタブ区切り）。
+                </p>
+                <textarea id="bulk-import-text" placeholder="apple,りんご&#10;consider,〜を考慮する&#10;available,利用可能な"></textarea>
+                <button onclick="App.processBulkImport()" class="btn" style="margin-top: 6px;">一括登録を実行</button>
+            </div>
+        </div>
+
+        <!-- 単語一覧と検索バー -->
+        <div class="flex-row" style="margin-bottom: 8px;">
+            <div style="font-weight: 600; font-size: 13px;">登録済みアイテム一覧 (<span id="manage-count">0</span>)</div>
+            <input type="text" id="manage-search-input" placeholder="単語・訳で検索..." style="width: 220px; padding: 4px 8px; font-size: 12px; margin-bottom: 0;" oninput="App.filterManageList()">
+        </div>
+
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>語句 / 和訳</th>
+                    <th style="width: 80px;">音声</th>
+                    <th style="width: 120px;">次回期日</th>
+                    <th style="width: 100px;">間隔 / EF</th>
+                    <th style="width: 80px;">状態</th>
+                    <th style="width: 60px;">操作</th>
+                </tr>
+            </thead>
+            <tbody id="manage-questions-list"></tbody>
+        </table>
+
+        <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+            <button onclick="App.closeManageNotebookModal()" class="btn btn-secondary">完了して閉じる</button>
+        </div>
+    </div>
+</div>
+
+<script>
+const CLOUD_SYNC_URL = "https://kvdb.io/Fd55uogXyxYdnXJvnyN8Xo/repetit_shared_notebooks";
+
+const DEFAULT_NOTEBOOKS = [
+    {
+        id: "sys_basic_vocab",
+        title: "基本英単語 (基礎・重要語彙)",
+        isDefault: true,
+        isOnlineShared: true,
+        questions: [
+            { id: "v1", english: "essential", japanese: "不可欠な、極めて重要な", rep: 0, interval: 0, ef: 2.5, hasLearned: false, nextReviewTime: 0 },
+            { id: "v2", english: "consider", japanese: "〜を考慮する、よく考える", rep: 0, interval: 0, ef: 2.5, hasLearned: false, nextReviewTime: 0 },
+            { id: "v3", english: "available", japanese: "利用可能な、入手できる", rep: 0, interval: 0, ef: 2.5, hasLearned: false, nextReviewTime: 0 },
+            { id: "v4", english: "maintain", japanese: "〜を維持する、保つ", rep: 0, interval: 0, ef: 2.5, hasLearned: false, nextReviewTime: 0 },
+            { id: "v5", english: "crucial", japanese: "決定的な、極めて重大な", rep: 0, interval: 0, ef: 2.5, hasLearned: false, nextReviewTime: 0 },
+            { id: "v6", english: "achieve", japanese: "〜を達成する、成し遂げる", rep: 0, interval: 0, ef: 2.5, hasLearned: false, nextReviewTime: 0 },
+            { id: "v7", english: "significant", japanese: "重要な、著しい", rep: 0, interval: 0, ef: 2.5, hasLearned: false, nextReviewTime: 0 },
+            { id: "v8", english: "contribute", japanese: "貢献する、寄与する", rep: 0, interval: 0, ef: 2.5, hasLearned: false, nextReviewTime: 0 }
+        ]
+    },
+    {
+        id: "sys_basic_phrases",
+        title: "基本日常英会話表現",
+        isDefault: true,
+        isOnlineShared: true,
+        questions: [
+            { id: "p1", english: "How have you been?", japanese: "お元気でしたか？", rep: 0, interval: 0, ef: 2.5, hasLearned: false, nextReviewTime: 0 },
+            { id: "p2", english: "Could you do me a favor?", japanese: "お願いがあるのですが？", rep: 0, interval: 0, ef: 2.5, hasLearned: false, nextReviewTime: 0 },
+            { id: "p3", english: "It's entirely up to you.", japanese: "それは完全にあなた次第です。", rep: 0, interval: 0, ef: 2.5, hasLearned: false, nextReviewTime: 0 },
+            { id: "p4", english: "I appreciate your help.", japanese: "手助けに感謝します。", rep: 0, interval: 0, ef: 2.5, hasLearned: false, nextReviewTime: 0 }
+        ]
+    }
+];
+
+const App = {
+    currentUser: null,
+    db: { users: {} },
+    isSignUpMode: false,
+    isFastSimulation: false,
+    isDeveloperMode: false,
+    isCreatingOnline: false,
+
+    sessionMode: 'all_review',
+    currentPlayMode: null,
+    selectedNotebookId: null,
+    sessionQuestions: [],
+    currentSessionIndex: 0,
+    
+    currentQuestion: null,
+    currentNotebookTitle: '',
+    currentPoolWords: [],
+    selectedWordIds: [],
+
+    mixedSubMode: 'input',
+    mixedTargetWord: '',
+
+    questionStartTime: null,
+    timerIntervalId: null,
+    isWaitingNextAction: false, // 解答後の手動待機フラグ
+
+    matchingSelectedJp: null,
+    matchingSelectedEn: null,
+
+    // Web Audio API による正解チャイム音
+    playCorrectSound() {
+        try {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (!AudioCtx) return;
+            const ctx = new AudioCtx();
+            const now = ctx.currentTime;
+
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+
+            osc.type = 'sine';
+            // 2音のベルチャイム (D5 -> A5)
+            osc.frequency.setValueAtTime(587.33, now);
+            osc.frequency.setValueAtTime(880.00, now + 0.12);
+
+            gain.gain.setValueAtTime(0.18, now);
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
+
+            osc.start(now);
+            osc.stop(now + 0.45);
+        } catch (e) {
+            console.error(e);
+        }
+    },
+
+    getDayUnitMs() {
+        return this.isFastSimulation ? 10 * 1000 : 24 * 60 * 60 * 1000;
+    },
+
+    init() {
+        const data = localStorage.getItem('google_trans_eng_db');
+        if (data) this.db = JSON.parse(data);
+        const lastUser = localStorage.getItem('google_trans_eng_user');
+        if (lastUser && this.db.users[lastUser]) this.login(lastUser);
+
+        setInterval(() => this.updateGlobalReviewBadge(), 3000);
+
+        // Enterキーで「次の問題に進む」を発火させるリスナー
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && App.isWaitingNextAction) {
+                App.goToNextQuestion();
+            }
+        });
+    },
+
+    save() {
+        localStorage.setItem('google_trans_eng_db', JSON.stringify(this.db));
+    },
+
+    handleDevAuthToggle() {
+        if (this.isDeveloperMode) {
+            if (confirm('開発者モードを解除して通常保護状態に戻しますか？')) {
+                this.isDeveloperMode = false;
+                this.updateDevAuthUI();
+                this.renderNotebookFiles();
+                if (this.selectedNotebookId) this.renderManageQuestionsList();
+                alert('開発者モードを解除しました。');
+            }
+            return;
+        }
+
+        const inputCode = prompt('開発者認証コードを入力してください:');
+        if (inputCode === null) return;
+
+        if (inputCode.trim() === '0064') {
+            this.isDeveloperMode = true;
+            this.updateDevAuthUI();
+            this.renderNotebookFiles();
+            if (this.selectedNotebookId) this.renderManageQuestionsList();
+            alert('開発者認証に成功しました (0064適用中)。\n・オンライン共通単語帳のクラウド作成\n・基本単語帳の削除/編集\nが可能です。');
+        } else {
+            alert('認証コードが正しくありません。');
+        }
+    },
+
+    updateDevAuthUI() {
+        const btn = document.getElementById('dev-auth-btn');
+        const text = document.getElementById('dev-auth-text');
+        const onlineBtn = document.getElementById('btn-create-online-nb');
+        if (this.isDeveloperMode) {
+            btn.classList.add('active');
+            text.innerText = '有効(0064)';
+            if (onlineBtn) onlineBtn.classList.remove('hidden');
+        } else {
+            btn.classList.remove('active');
+            text.innerText = '開発';
+            if (onlineBtn) onlineBtn.classList.add('hidden');
+        }
+    },
+
+    async syncOnlineNotebooks() {
+        alert("クラウド上の共有単語帳と同期しています...");
+        try {
+            const res = await fetch(CLOUD_SYNC_URL);
+            if (!res.ok) {
+                if (res.status === 404) {
+                    alert('現在クラウド上に共有単語帳はありません。開発者権限で新規公開してください。');
+                    return;
+                }
+                throw new Error('Sync failed with status ' + res.status);
+            }
+            const onlineList = await res.json();
+            if (!Array.isArray(onlineList)) throw new Error('Data format error');
+
+            const userData = this.getUserData();
+            let addedCount = 0;
+
+            onlineList.forEach(onlineNb => {
+                const existing = userData.notebooks.find(n => n.id === onlineNb.id);
+                if (!existing) {
+                    userData.notebooks.push(onlineNb);
+                    addedCount++;
+                } else if (onlineNb.updatedAt && (!existing.updatedAt || onlineNb.updatedAt > existing.updatedAt)) {
+                    existing.title = onlineNb.title;
+                    existing.questions = onlineNb.questions;
+                    existing.updatedAt = onlineNb.updatedAt;
+                    addedCount++;
+                }
+            });
+
+            this.save();
+            this.renderNotebookFiles();
+            alert(`同期完了: ${addedCount} 件の単語帳を受信/更新しました。他のスマホでも共有されています。`);
+        } catch (err) {
+            console.error(err);
+            alert('同期に失敗しました。ネットワークを確認してください。');
+        }
+    },
+
+    showCreateOnlineNotebookModal() {
+        this.isCreatingOnline = true;
+        document.getElementById('create-modal-title').innerText = '[開発者] 全端末共通・オンライン単語帳の作成';
+        document.getElementById('notebook-title-input').value = '';
+        document.getElementById('modal-create-notebook').classList.remove('hidden');
+    },
+
+    async publishSelectedNotebookToOnline() {
+        if (!this.isDeveloperMode) {
+            return alert('オンライン単語帳の公開には開発者認証（0064）が必要です。');
+        }
+        const nb = this.getUserData().notebooks.find(n => n.id === this.selectedNotebookId);
+        if (!nb) return;
+
+        if (!confirm(`単語帳「${nb.title}」をクラウドに保存しますか？ 他のスマホでも「同期」から利用できます。`)) return;
+
+        nb.isOnlineShared = true;
+        nb.updatedAt = Date.now();
+
+        try {
+            let list = [];
+            try {
+                const res = await fetch(CLOUD_SYNC_URL);
+                if (res.ok) list = await res.json();
+            } catch(e) {}
+            if (!Array.isArray(list)) list = [];
+
+            list = list.filter(item => item.id !== nb.id);
+            list.push(nb);
+
+            const putRes = await fetch(CLOUD_SYNC_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(list)
+            });
+
+            if (putRes.ok) {
+                this.save();
+                this.renderNotebookFiles();
+                alert(`「${nb.title}」をクラウドに公開しました。他の端末で「同期」を押すと取り込まれます。`);
+            } else {
+                throw new Error('Save status ' + putRes.status);
+            }
+        } catch (err) {
+            console.error(err);
+            alert('クラウドへの保存に失敗しました。');
+        }
+    },
+
+    speak(text) {
+        if (!('speechSynthesis' in window)) return;
+        window.speechSynthesis.cancel();
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = 'en-US';
+        u.rate = 0.92;
+        window.speechSynthesis.speak(u);
+    },
+
+    ensureDefaultNotebooks(user) {
+        if (!user.notebooks) user.notebooks = [];
+        if (!user.deletedDefaultNotebookIds) user.deletedDefaultNotebookIds = [];
+
+        DEFAULT_NOTEBOOKS.forEach(defNb => {
+            if (user.deletedDefaultNotebookIds.includes(defNb.id)) return;
+            const exists = user.notebooks.find(n => n.id === defNb.id);
+            if (!exists) {
+                user.notebooks.unshift(JSON.parse(JSON.stringify(defNb)));
+            }
+        });
+
+        user.notebooks.forEach(nb => {
+            nb.questions.forEach(q => {
+                if (q.rep === undefined) q.rep = 0;
+                if (q.interval === undefined) q.interval = 0;
+                if (q.ef === undefined) q.ef = 2.5;
+                if (q.hasLearned === undefined) q.hasLearned = (q.rep > 0);
+                if (q.nextReviewTime === undefined) q.nextReviewTime = Date.now();
+            });
+        });
+    },
+
+    toggleFastSimulation() {
+        this.isFastSimulation = !this.isFastSimulation;
+        const btn = document.getElementById('sim-mode-btn');
+        const text = document.getElementById('sim-mode-text');
+        if (this.isFastSimulation) {
+            btn.classList.add('active');
+            text.innerText = '10s/日';
+        } else {
+            btn.classList.remove('active');
+            text.innerText = '検証';
+        }
+        this.updateGlobalReviewBadge();
+        if (this.selectedNotebookId) this.renderManageQuestionsList();
+    },
+
+    toggleAuthMode() {
+        this.isSignUpMode = !this.isSignUpMode;
+        const title = document.getElementById('auth-title');
+        const submitBtn = document.getElementById('auth-submit-btn');
+        const toggleLink = document.getElementById('auth-toggle-link');
+        
+        if (this.isSignUpMode) {
+            title.innerText = "新規アカウント作成";
+            submitBtn.innerText = "作成してログイン";
+            toggleLink.innerText = "既存アカウントでログイン";
+        } else {
+            title.innerText = "ログイン";
+            submitBtn.innerText = "ログイン";
+            toggleLink.innerText = "新規アカウントを作成する";
+        }
+    },
+
+    handleAuth() {
+        const username = document.getElementById('auth-username').value.trim();
+        const password = document.getElementById('auth-password').value.trim();
+        if (!username || !password) return alert('ユーザー名とパスワードを入力してください');
+        
+        const userExists = !!this.db.users[username];
+
+        if (this.isSignUpMode) {
+            if (userExists) return alert('このユーザー名は既に存在します');
+            this.db.users[username] = { password, notebooks: [], history: [], deletedDefaultNotebookIds: [] };
+            this.ensureDefaultNotebooks(this.db.users[username]);
+            this.save();
+        } else {
+            if (!userExists) return alert('ユーザーが見つかりません');
+            const userData = this.db.users[username];
+            if (!userData.password) {
+                userData.password = password;
+                this.save();
+            } else if (userData.password !== password) {
+                return alert('パスワードが正しくありません');
+            }
+            this.ensureDefaultNotebooks(userData);
+            this.save();
+        }
+
+        localStorage.setItem('google_trans_eng_user', username);
+        document.getElementById('auth-username').value = '';
+        document.getElementById('auth-password').value = '';
+        this.login(username);
+    },
+
+    login(username) {
+        this.currentUser = username;
+        this.ensureDefaultNotebooks(this.getUserData());
+        this.save();
+
+        document.getElementById('display-user').innerText = username;
+        document.getElementById('view-auth').classList.add('hidden');
+        document.getElementById('view-main').classList.remove('hidden');
+        this.updateDevAuthUI();
+        this.switchTab('home');
+    },
+
+    logout() {
+        localStorage.removeItem('google_trans_eng_user');
+        this.currentUser = null;
+        this.isDeveloperMode = false;
+        document.getElementById('view-auth').classList.remove('hidden');
+        document.getElementById('view-main').classList.add('hidden');
+    },
+
+    getUserData() { return this.db.users[this.currentUser]; },
+
+    switchTab(tabName) {
+        this.stopQuestionTimer();
+        this.isWaitingNextAction = false;
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.querySelectorAll('.site-nav button').forEach(el => el.classList.remove('active'));
+        
+        document.getElementById(`tab-${tabName}`).classList.remove('hidden');
+        document.getElementById(`nav-${tabName}`).classList.add('active');
+
+        if (tabName === 'home') this.renderHome();
+        if (tabName === 'files') this.renderNotebookFiles();
+        if (tabName === 'review') {
+            this.sessionMode = 'all_review';
+            this.setupReviewSession();
+        }
+        this.updateGlobalReviewBadge();
+    },
+
+    updateGlobalReviewBadge() {
+        if (!this.currentUser) return;
+        let count = 0;
+        const now = Date.now();
+        this.getUserData().notebooks.forEach(nb => {
+            nb.questions.forEach(q => { 
+                if (q.hasLearned && now >= q.nextReviewTime) count++; 
+            });
+        });
+        document.getElementById('review-count').innerText = count;
+    },
+
+    async handleGoogleTranslateAutofill() {
+        const jpText = document.getElementById('input-japanese').value.trim();
+        const enInput = document.getElementById('input-english');
+        const statusEl = document.getElementById('translation-status-msg');
+
+        if (!jpText) return;
+        statusEl.innerText = "翻訳取得中...";
+
+        try {
+            const response = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(jpText)}&langpair=ja|en`);
+            const data = await response.json();
+
+            if (data && data.responseData && data.responseData.translatedText) {
+                let translatedText = data.responseData.translatedText.replace(/[?.,!]$/, ""); 
+                enInput.value = translatedText;
+                statusEl.innerText = "自動英訳完了";
+            } else {
+                throw new Error("Translation failed");
+            }
+        } catch (error) {
+            statusEl.innerText = "自動翻訳に失敗しました";
+        }
+    },
+
+    renderHome() {
+        const data = this.getUserData();
+        const history = data.history || [];
+        document.getElementById('stat-total').innerText = history.length;
+        document.getElementById('stat-folders').innerText = data.notebooks.length;
+        
+        const correctCount = history.filter(h => h.isCorrect).length;
+        document.getElementById('stat-accuracy').innerText = (history.length > 0 ? Math.round((correctCount / history.length) * 100) : 0) + '%';
+
+        const list = document.getElementById('history-list');
+        list.innerHTML = '';
+        if (history.length === 0) {
+            list.innerHTML = `<tr><td colspan="5" style="text-align:center; color:var(--text-muted); padding: 20px;">学習記録はありません。</td></tr>`;
+            return;
+        }
+
+        [...history].reverse().slice(0, 10).forEach(log => {
+            const tr = document.createElement('tr');
+            let modeName = '演習';
+            if (log.mode === 'mixed-input') modeName = '単語入力';
+            else if (log.mode === 'mixed-reorder') modeName = '並べ替え';
+            else if (log.mode === 'choice') modeName = '四択クイズ';
+            else if (log.mode === 'matching') modeName = 'マッチング';
+
+            const speedText = log.elapsedSeconds !== undefined ? `${log.elapsedSeconds}s` : '-';
+            const penaltyText = log.penaltyApplied ? '[遅延補正]' : '';
+            const resultText = log.isCorrect ? '正解' : '誤答';
+
+            tr.innerHTML = `
+                <td><small style="color:var(--text-sub);">${new Date(log.timestamp).toLocaleDateString()} ${new Date(log.timestamp).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</small></td>
+                <td><div style="max-width:140px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${log.notebookTitle}</div></td>
+                <td>${modeName}</td>
+                <td><strong>${log.english}</strong></td>
+                <td><strong>${resultText}</strong> (${speedText}) ${penaltyText}</td>
+            `;
+            list.appendChild(tr);
+        });
+    },
+
+    renderNotebookFiles() {
+        const container = document.getElementById('notebook-list-container');
+        container.innerHTML = '';
+        const now = Date.now();
+        this.getUserData().notebooks.forEach(nb => {
+            const reviewDue = nb.questions.filter(q => q.hasLearned && now >= q.nextReviewTime).length;
+            const newCount = nb.questions.filter(q => !q.hasLearned).length;
+            const card = document.createElement('div');
+            card.className = 'notebook-card';
+            
+            const statusHtml = reviewDue > 0
+                ? `<strong>要復習: ${reviewDue} 件</strong>`
+                : `定着中`;
+
+            let badgeText = '';
+            if (nb.isOnlineShared) {
+                badgeText = 'オンライン共通';
+            } else if (nb.isDefault) {
+                badgeText = this.isDeveloperMode ? '公式・編集可(0064)' : '公式・保護';
+            }
+            const systemBadge = badgeText ? `<span style="font-size:11px; border:1px solid #aaa; padding:1px 4px; margin-left:6px;">${badgeText}</span>` : '';
+
+            const canDelete = !nb.isDefault || this.isDeveloperMode;
+            const deleteButtonHtml = canDelete 
+                ? `<button class="btn btn-secondary" onclick="event.stopPropagation(); App.deleteNotebook('${nb.id}')">削除</button>` 
+                : '';
+
+            card.innerHTML = `
+                <div>
+                    <div class="notebook-card-title">${nb.title}${systemBadge}</div>
+                    <div class="notebook-card-meta">
+                        <div>登録語数: ${nb.questions.length} (未学習: ${newCount})</div>
+                        <div>状態: ${statusHtml}</div>
+                    </div>
+                </div>
+                <div style="display:flex; gap:8px;">
+                    <button class="btn" style="flex:1;" onclick="event.stopPropagation(); App.startNotebookPlay('${nb.id}')">学習</button>
+                    <button class="btn btn-secondary" onclick="event.stopPropagation(); App.showManageNotebookModal('${nb.id}')">編集</button>
+                    ${deleteButtonHtml}
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    },
+
+    showCreateNotebookModal() {
+        this.isCreatingOnline = false;
+        document.getElementById('create-modal-title').innerText = '新規単語帳の作成';
+        document.getElementById('notebook-title-input').value = '';
+        document.getElementById('modal-create-notebook').classList.remove('hidden');
+    },
+    closeCreateNotebookModal() { 
+        document.getElementById('modal-create-notebook').classList.add('hidden'); 
+    },
+
+    async createNotebook() {
+        const title = document.getElementById('notebook-title-input').value.trim();
+        if (!title) return alert('名前を入力してください');
+
+        const newNb = { 
+            id: "nb_" + Date.now(), 
+            title, 
+            isDefault: false, 
+            isOnlineShared: this.isCreatingOnline,
+            updatedAt: Date.now(),
+            questions: [] 
+        };
+
+        this.getUserData().notebooks.push(newNb);
+        this.save();
+        this.closeCreateNotebookModal();
+        this.renderNotebookFiles();
+
+        if (this.isCreatingOnline) {
+            this.selectedNotebookId = newNb.id;
+            await this.publishSelectedNotebookToOnline();
+        }
+    },
+
+    renameSelectedNotebook() {
+        const nb = this.getUserData().notebooks.find(n => n.id === this.selectedNotebookId);
+        if (!nb) return;
+
+        if (nb.isDefault && !this.isDeveloperMode) {
+            return alert('基本単語帳の名前を変更するには開発者認証（コード: 0064）が必要です。');
+        }
+
+        const newTitle = prompt('新しい単語帳名を入力してください:', nb.title);
+        if (newTitle && newTitle.trim()) {
+            nb.title = newTitle.trim();
+            this.save();
+            document.getElementById('manage-notebook-title').innerText = `${nb.title} の編集`;
+            this.renderNotebookFiles();
+        }
+    },
+
+    deleteNotebook(id) {
+        const data = this.getUserData();
+        const nb = data.notebooks.find(n => n.id === id);
+        if (!nb) return;
+
+        if (nb.isDefault && !this.isDeveloperMode) {
+            return alert('基本単語帳は保護されているため削除できません。\n開発者コード「0064」を入力して解除してください。');
+        }
+
+        const confirmMsg = nb.isDefault
+            ? `【警告: 公式基本単語帳】「${nb.title}」を本当に削除しますか？`
+            : `単語帳「${nb.title}」を削除しますか？`;
+
+        if (!confirm(confirmMsg)) return;
+
+        if (nb.isDefault) {
+            if (!data.deletedDefaultNotebookIds) data.deletedDefaultNotebookIds = [];
+            if (!data.deletedDefaultNotebookIds.includes(id)) {
+                data.deletedDefaultNotebookIds.push(id);
+            }
+        }
+
+        data.notebooks = data.notebooks.filter(n => n.id !== id);
+        this.save();
+        this.renderNotebookFiles();
+    },
+
+    showManageNotebookModal(id) {
+        this.selectedNotebookId = id;
+        const nb = this.getUserData().notebooks.find(n => n.id === id);
+        document.getElementById('manage-notebook-title').innerText = `${nb.title} の編集`;
+        
+        let badgeMsg = '';
+        if (nb.isOnlineShared) {
+            badgeMsg = "[オンライン共通単語帳]";
+        } else if (nb.isDefault) {
+            badgeMsg = this.isDeveloperMode ? "[基本単語帳: 開発者権限]" : "[基本単語帳: 保護モード]";
+        }
+        document.getElementById('manage-system-badge').innerText = badgeMsg;
+
+        const publishBtn = document.getElementById('btn-publish-online');
+        if (this.isDeveloperMode) {
+            publishBtn.classList.remove('hidden');
+        } else {
+            publishBtn.classList.add('hidden');
+        }
+
+        document.getElementById('translation-status-msg').innerText = '';
+        document.getElementById('manage-search-input').value = '';
+        document.getElementById('bulk-import-container').classList.add('hidden');
+        this.renderManageQuestionsList();
+        document.getElementById('modal-manage-notebook').classList.remove('hidden');
+    },
+    closeManageNotebookModal() {
+        document.getElementById('modal-manage-notebook').classList.add('hidden');
+        this.renderNotebookFiles();
+    },
+
+    toggleBulkImport() {
+        const c = document.getElementById('bulk-import-container');
+        c.classList.toggle('hidden');
+    },
+
+    processBulkImport() {
+        const text = document.getElementById('bulk-import-text').value.trim();
+        if (!text) return alert('インポートするテキストを入力してください');
+
+        const nb = this.getUserData().notebooks.find(n => n.id === this.selectedNotebookId);
+        const lines = text.split('\n');
+        let count = 0;
+
+        lines.forEach(line => {
+            const trimmed = line.trim();
+            if (!trimmed) return;
+            const parts = trimmed.includes('\t') ? trimmed.split('\t') : trimmed.split(',');
+            if (parts.length >= 2) {
+                const en = parts[0].trim();
+                const jp = parts[1].trim();
+                if (en && jp) {
+                    nb.questions.push({
+                        id: "q_" + Date.now() + Math.random(),
+                        english: en,
+                        japanese: jp,
+                        rep: 0,
+                        interval: 0,
+                        ef: 2.5,
+                        hasLearned: false,
+                        nextReviewTime: Date.now()
+                    });
+                    count++;
+                }
+            }
+        });
+
+        this.save();
+        document.getElementById('bulk-import-text').value = '';
+        document.getElementById('bulk-import-container').classList.add('hidden');
+        this.renderManageQuestionsList();
+        alert(`${count} 件の単語を一括登録しました。`);
+    },
+
+    formatNextReviewTime(nextTime) {
+        const now = Date.now();
+        const diff = nextTime - now;
+        if (diff <= 0) return '期日到来 (即時)';
+
+        if (this.isFastSimulation) {
+            return `${Math.ceil(diff / 1000)}秒後`;
+        }
+        const hours = Math.floor(diff / (1000 * 60 * 60));
+        if (hours < 24) return `${hours}時間後`;
+        const days = Math.floor(hours / 24);
+        return `${days}日後`;
+    },
+
+    filterManageList() {
+        this.renderManageQuestionsList();
+    },
+
+    renderManageQuestionsList() {
+        const nb = this.getUserData().notebooks.find(n => n.id === this.selectedNotebookId);
+        const list = document.getElementById('manage-questions-list');
+        const query = document.getElementById('manage-search-input').value.trim().toLowerCase();
+        list.innerHTML = '';
+
+        document.getElementById('manage-count').innerText = nb.questions.length;
+
+        const filtered = nb.questions.filter(q => {
+            if (!query) return true;
+            return q.english.toLowerCase().includes(query) || q.japanese.toLowerCase().includes(query);
+        });
+
+        if (filtered.length === 0) {
+            list.innerHTML = `<tr><td colspan="6" style="text-align:center; color:var(--text-muted); padding:20px 0;">アイテムがありません。</td></tr>`;
+            return;
+        }
+
+        const now = Date.now();
+        filtered.forEach((q, idx) => {
+            const tr = document.createElement('tr');
+            let statusText = '';
+            if (!q.hasLearned) {
+                statusText = '<span style="color:var(--text-sub);">未学習</span>';
+            } else if (now >= q.nextReviewTime) {
+                statusText = '<strong>要復習</strong>';
+            } else {
+                statusText = '定着中';
+            }
+
+            const nextStr = q.hasLearned ? this.formatNextReviewTime(q.nextReviewTime) : '-';
+            const efStr = q.ef ? q.ef.toFixed(2) : '2.50';
+            const intervalStr = q.interval !== undefined ? `${q.interval}日` : '0日';
+
+            tr.innerHTML = `
+                <td><strong>${q.english}</strong><br><small style="color:var(--text-sub);">${q.japanese}</small></td>
+                <td><button class="btn-link" onclick="App.speak('${q.english.replace(/'/g, "\\'")}')">[再生]</button></td>
+                <td><small>${nextStr}</small></td>
+                <td><small>${intervalStr} / ${efStr}</small></td>
+                <td>${statusText}</td>
+                <td><button class="btn-link" onclick="App.deleteQuestion('${q.id}')">削除</button></td>
+            `;
+            list.appendChild(tr);
+        });
+    },
+
+    addQuestionToNotebook() {
+        const english = document.getElementById('input-english').value.trim();
+        const japanese = document.getElementById('input-japanese').value.trim();
+        if (!english || !japanese) return alert('語句と和訳の両方を入力してください');
+
+        const nb = this.getUserData().notebooks.find(n => n.id === this.selectedNotebookId);
+        nb.questions.push({
+            id: "q_" + Date.now() + Math.random(),
+            english,
+            japanese,
+            rep: 0,
+            interval: 0,
+            ef: 2.5,
+            hasLearned: false,
+            nextReviewTime: Date.now()
+        });
+        this.save();
+        document.getElementById('input-english').value = '';
+        document.getElementById('input-japanese').value = '';
+        document.getElementById('translation-status-msg').innerText = '';
+        this.renderManageQuestionsList();
+    },
+
+    deleteQuestion(questionId) {
+        const nb = this.getUserData().notebooks.find(n => n.id === this.selectedNotebookId);
+        nb.questions = nb.questions.filter(q => q.id !== questionId);
+        this.save();
+        this.renderManageQuestionsList();
+    },
+
+    buildOrderedQuestionPool(rawQuestions) {
+        const now = Date.now();
+        const reviewGroup = rawQuestions.filter(q => q.hasLearned && now >= q.nextReviewTime);
+        const newGroup = rawQuestions.filter(q => !q.hasLearned);
+        const upcomingGroup = rawQuestions.filter(q => q.hasLearned && now < q.nextReviewTime);
+        return [...reviewGroup, ...newGroup, ...upcomingGroup];
+    },
+
+    startNotebookPlay(id) {
+        this.sessionMode = 'single_notebook';
+        this.selectedNotebookId = id;
+        const nb = this.getUserData().notebooks.find(n => n.id === id);
+        this.sessionQuestions = this.buildOrderedQuestionPool(nb.questions.map(q => ({
+            ...q,
+            _notebookId: nb.id,
+            _notebookTitle: nb.title
+        })));
+        this.currentSessionIndex = 0;
+
+        document.getElementById('review-session-title').innerText = `${nb.title} の学習`;
+        document.getElementById('review-mode-desc').innerText = '形式を選択してください。要復習項目が最優先で出題されます。';
+        this.showView('mode_select');
+    },
+
+    setupReviewSession() {
+        document.getElementById('review-session-title').innerText = '忘却曲線 自動復習';
+        document.getElementById('review-mode-desc').innerText = '全単語帳から、SM-2基準で現在復習すべきフレーズを自動抽出しました。';
+        
+        let allQuestions = [];
+        this.getUserData().notebooks.forEach(nb => {
+            nb.questions.forEach(q => {
+                allQuestions.push({ ...q, _notebookId: nb.id, _notebookTitle: nb.title });
+            });
+        });
+        
+        this.sessionQuestions = this.buildOrderedQuestionPool(allQuestions);
+        this.currentSessionIndex = 0;
+        this.showView('mode_select');
+    },
+
+    showView(viewType) {
+        this.stopQuestionTimer();
+        this.isWaitingNextAction = false;
+        document.getElementById('review-mode-select-view').classList.add('hidden');
+        document.getElementById('play-container-mixed').classList.add('hidden');
+        document.getElementById('play-container-choice').classList.add('hidden');
+        document.getElementById('play-container-matching').classList.add('hidden');
+        document.getElementById('no-review-msg').classList.add('hidden');
+
+        document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+        document.getElementById('tab-review').classList.remove('hidden');
+        document.querySelectorAll('.site-nav button').forEach(el => el.classList.remove('active'));
+        document.getElementById('nav-review').classList.add('active');
+
+        if (this.sessionQuestions.length === 0) {
+            document.getElementById('no-review-msg').classList.remove('hidden');
+            return;
+        }
+
+        if (viewType === 'mode_select') {
+            document.getElementById('review-mode-select-view').classList.remove('hidden');
+        } else if (viewType === 'mixed') {
+            document.getElementById('play-container-mixed').classList.remove('hidden');
+        } else if (viewType === 'choice') {
+            document.getElementById('play-container-choice').classList.remove('hidden');
+        } else if (viewType === 'matching') {
+            document.getElementById('play-container-matching').classList.remove('hidden');
+        }
+    },
+
+    selectPlayMode(mode) {
+        this.currentPlayMode = mode;
+        if (mode === 'mixed') {
+            this.showView('mixed');
+            this.loadMixedQuestion();
+        } else if (mode === 'choice') {
+            this.showView('choice');
+            this.loadChoiceQuestion();
+        } else if (mode === 'matching') {
+            this.showView('matching');
+            this.loadMatchingTask();
+        }
+    },
+
+    tokenize(s) { return s.trim().replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g,"").split(/\s+/); },
+
+    startQuestionTimer(displayElId) {
+        this.stopQuestionTimer();
+        this.questionStartTime = Date.now();
+        const timerEl = document.getElementById(displayElId);
+        timerEl.innerText = "0.0";
+        this.timerIntervalId = setInterval(() => {
+            const sec = ((Date.now() - this.questionStartTime) / 1000).toFixed(1);
+            timerEl.innerText = sec;
+        }, 100);
+    },
+
+    stopQuestionTimer() {
+        if (this.timerIntervalId) {
+            clearInterval(this.timerIntervalId);
+            this.timerIntervalId = null;
+        }
+    },
+
+    fetchActualQuestion(rawQ) {
+        let nb;
+        if (this.sessionMode === 'all_review') {
+            nb = this.getUserData().notebooks.find(n => n.id === rawQ._notebookId);
+        } else {
+            nb = this.getUserData().notebooks.find(n => n.id === this.selectedNotebookId);
+        }
+        this.currentQuestion = nb.questions.find(q => q.id === rawQ.id);
+        this.currentNotebookTitle = nb.title;
+    },
+
+    // ユーザーが「次の問題に進む」を押した時の共通ハンドラ
+    goToNextQuestion() {
+        this.isWaitingNextAction = false;
+        this.currentSessionIndex++;
+        if (this.currentPlayMode === 'mixed') {
+            this.loadMixedQuestion();
+        } else if (this.currentPlayMode === 'choice') {
+            this.loadChoiceQuestion();
+        }
+    },
+
+    /* =======================================================
+       1. 並べ替え ＆ 単語入力 ミックス演習
+       ======================================================= */
+    pickTargetWord(english) {
+        const cleanWords = english.replace(/[.,\/#!$%\^&\*;:{}=\-_`~()?]/g, "").split(/\s+/).filter(w => w.length > 0);
+        if (cleanWords.length <= 1) return cleanWords[0] || english;
+
+        const stopWords = ['a', 'an', 'the', 'is', 'are', 'was', 'were', 'am', 'in', 'on', 'at', 'to', 'for', 'of', 'and', 'or', 'it', 'its', 'my', 'your', 'his', 'her', 'by', 'as', 'do', 'did', 'so'];
+        const contentWords = cleanWords.filter(w => !stopWords.includes(w.toLowerCase()) && w.length >= 3);
+        
+        if (contentWords.length > 0) {
+            contentWords.sort((a, b) => b.length - a.length);
+            return contentWords[Math.floor(Math.random() * Math.min(contentWords.length, 3))];
+        }
+        return cleanWords[0];
+    },
+
+    loadMixedQuestion() {
+        this.isWaitingNextAction = false;
+        if (this.currentSessionIndex >= this.sessionQuestions.length) {
+            alert('すべての問題が終了しました。');
+            this.switchTab('home');
+            return;
+        }
+
+        const rawQ = this.sessionQuestions[this.currentSessionIndex];
+        this.fetchActualQuestion(rawQ);
+
+        const badgeEl = document.getElementById('mixed-pool-badge');
+        const now = Date.now();
+        if (!this.currentQuestion.hasLearned) {
+            badgeEl.innerText = '[新規]';
+        } else if (now >= this.currentQuestion.nextReviewTime) {
+            badgeEl.innerText = '[要復習]';
+        } else {
+            badgeEl.innerText = '[定着中]';
+        }
+
+        document.getElementById('mixed-progress').innerText = `問題 ${this.currentSessionIndex + 1} / ${this.sessionQuestions.length}`;
+        document.getElementById('mixed-notebook-name').innerText = this.currentNotebookTitle;
+        document.getElementById('mixed-japanese').innerText = this.currentQuestion.japanese;
+        document.getElementById('mixed-result').innerHTML = '';
+        document.getElementById('mixed-next-btn-container').classList.add('hidden');
+
+        // アクションバー表示復元
+        document.getElementById('mixed-input-action-bar').classList.remove('hidden');
+        document.getElementById('mixed-reorder-action-bar').classList.remove('hidden');
+
+        const wordCount = this.currentQuestion.english.trim().split(/\s+/).length;
+        if (wordCount <= 1) {
+            this.mixedSubMode = 'input';
+        } else {
+            this.mixedSubMode = (Math.random() < 0.5) ? 'reorder' : 'input';
+        }
+
+        const subInputEl = document.getElementById('mixed-sub-input');
+        const subReorderEl = document.getElementById('mixed-sub-reorder');
+        const typeBadge = document.getElementById('mixed-type-badge');
+
+        if (this.mixedSubMode === 'input') {
+            typeBadge.innerText = '形式: 単語入力';
+            subInputEl.classList.remove('hidden');
+            subReorderEl.classList.add('hidden');
+
+            this.mixedTargetWord = this.pickTargetWord(this.currentQuestion.english);
+            
+            const hintEl = document.getElementById('mixed-input-hint');
+            hintEl.innerText = `(${this.mixedTargetWord.length} 文字)`;
+
+            const inputEl = document.getElementById('mixed-word-input');
+            inputEl.value = '';
+            inputEl.disabled = false;
+            setTimeout(() => inputEl.focus(), 80);
+
+            inputEl.onkeypress = (e) => {
+                if (e.key === 'Enter') App.checkMixedInputAnswer();
+            };
+        } else {
+            typeBadge.innerText = '形式: 文節並べ替え';
+            subInputEl.classList.add('hidden');
+            subReorderEl.classList.remove('hidden');
+
+            const tokens = this.tokenize(this.currentQuestion.english);
+            this.currentPoolWords = tokens.map((w, idx) => ({ id: idx, word: w })).sort(() => Math.random() - 0.5);
+            this.selectedWordIds = [];
+            this.renderMixedReorderUI();
+        }
+
+        this.startQuestionTimer('mixed-timer');
+    },
+
+    checkMixedInputAnswer() {
+        if (this.isWaitingNextAction) return;
+        this.stopQuestionTimer();
+        const elapsedSeconds = parseFloat(((Date.now() - this.questionStartTime) / 1000).toFixed(1));
+        const inputEl = document.getElementById('mixed-word-input');
+        const userInput = inputEl.value.trim();
+
+        if (!userInput) return alert('英単語を入力してください');
+
+        const isCorrect = (userInput.toLowerCase() === this.mixedTargetWord.toLowerCase());
+
+        const sm2Result = this.applySM2Algorithm(isCorrect, elapsedSeconds);
+        this.logHistory('mixed-input', this.mixedTargetWord, isCorrect, elapsedSeconds, sm2Result.isSlow);
+
+        const resEl = document.getElementById('mixed-result');
+        const intervalMsg = this.isFastSimulation 
+            ? `次回: 約${sm2Result.interval * 10}秒後` 
+            : `次回: 約${sm2Result.interval}日後`;
+
+        inputEl.disabled = true;
+        document.getElementById('mixed-input-action-bar').classList.add('hidden');
+
+        if (isCorrect) {
+            this.playCorrectSound();
+            this.speak(this.mixedTargetWord);
+            resEl.innerHTML = `
+                <div><span class="judgment-symbol correct">◯</span> <strong>正解 (${elapsedSeconds}s)</strong></div>
+                <div style="font-size: 16px; margin-top: 6px;">正解単語: <strong>${this.mixedTargetWord}</strong></div>
+                <div style="color:var(--text-sub); font-size:12px; margin-top: 4px;">間隔スケジュール: [${intervalMsg}]</div>
+            `;
+        } else {
+            // 不正解時は文全体を表示し、文全体を自動読み上げ
+            this.speak(this.currentQuestion.english);
+            resEl.innerHTML = `
+                <div><span class="judgment-symbol wrong">×</span> <strong>不正解</strong></div>
+                <div style="font-size: 16px; margin-top: 6px;">正解の単語: <strong>${this.mixedTargetWord}</strong></div>
+                <div style="font-size: 14px; margin-top: 4px; color:var(--text-sub);">正解の文全体: <strong>${this.currentQuestion.english}</strong></div>
+            `;
+        }
+
+        // 自動遷移せず、手動ボタンを表示
+        this.isWaitingNextAction = true;
+        document.getElementById('mixed-next-btn-container').classList.remove('hidden');
+        document.getElementById('mixed-next-btn').focus();
+    },
+
+    renderMixedReorderUI() {
+        const poolEl = document.getElementById('mixed-word-pool');
+        const answerEl = document.getElementById('mixed-answer-zone');
+        poolEl.innerHTML = ''; answerEl.innerHTML = '';
+
+        this.currentPoolWords.forEach(item => {
+            if (!this.selectedWordIds.includes(item.id)) {
+                const chip = document.createElement('div');
+                chip.className = 'word-chip';
+                chip.innerText = item.word;
+                chip.onclick = () => { this.selectedWordIds.push(item.id); this.renderMixedReorderUI(); };
+                poolEl.appendChild(chip);
+            }
+        });
+
+        this.selectedWordIds.forEach(id => {
+            const item = this.currentPoolWords.find(p => p.id === id);
+            const chip = document.createElement('div');
+            chip.className = 'word-chip';
+            chip.innerText = item.word;
+            chip.style.borderColor = 'var(--link-blue)';
+            chip.onclick = () => { this.selectedWordIds = this.selectedWordIds.filter(x => x !== id); this.renderMixedReorderUI(); };
+            answerEl.appendChild(chip);
+        });
+    },
+
+    resetCurrentQuestion() { 
+        this.selectedWordIds = []; 
+        this.renderMixedReorderUI(); 
+    },
+
+    checkMixedReorderAnswer() {
+        if (this.isWaitingNextAction) return;
+        this.stopQuestionTimer();
+        const elapsedSeconds = parseFloat(((Date.now() - this.questionStartTime) / 1000).toFixed(1));
+
+        const userWords = this.selectedWordIds.map(id => this.currentPoolWords.find(p => p.id === id).word);
+        const correctWords = this.tokenize(this.currentQuestion.english);
+        const isCorrect = JSON.stringify(userWords) === JSON.stringify(correctWords);
+
+        const sm2Result = this.applySM2Algorithm(isCorrect, elapsedSeconds);
+        this.logHistory('mixed-reorder', this.currentQuestion.english, isCorrect, elapsedSeconds, sm2Result.isSlow);
+
+        const resEl = document.getElementById('mixed-result');
+        const intervalMsg = this.isFastSimulation 
+            ? `次回: 約${sm2Result.interval * 10}秒後` 
+            : `次回: 約${sm2Result.interval}日後`;
+
+        document.getElementById('mixed-reorder-action-bar').classList.add('hidden');
+
+        if (isCorrect) {
+            this.playCorrectSound();
+            this.speak(this.currentQuestion.english);
+            resEl.innerHTML = `
+                <div><span class="judgment-symbol correct">◯</span> <strong>正解 (${elapsedSeconds}s)</strong></div>
+                <div style="font-size: 16px; margin-top: 6px;">英文: <strong>${this.currentQuestion.english}</strong></div>
+                <div style="color:var(--text-sub); font-size:12px; margin-top: 4px;">間隔スケジュール: [${intervalMsg}]</div>
+            `;
+        } else {
+            // 不正解時は文全体を表示し、文全体を自動読み上げ
+            this.speak(this.currentQuestion.english);
+            resEl.innerHTML = `
+                <div><span class="judgment-symbol wrong">×</span> <strong>不正解</strong></div>
+                <div style="font-size: 16px; margin-top: 6px;">正解の英文: <strong>${this.currentQuestion.english}</strong></div>
+            `;
+        }
+
+        this.isWaitingNextAction = true;
+        document.getElementById('mixed-next-btn-container').classList.remove('hidden');
+        document.getElementById('mixed-next-btn').focus();
+    },
+
+    skipQuestion() { 
+        this.stopQuestionTimer();
+        this.isWaitingNextAction = false;
+        this.currentSessionIndex++; 
+        if (this.currentPlayMode === 'mixed') this.loadMixedQuestion();
+        else if (this.currentPlayMode === 'choice') this.loadChoiceQuestion();
+        else this.showView('mode_select');
+    },
+
+    /* ============================
+       2. 四択クイズ（単語・意味）
+       ============================ */
+    loadChoiceQuestion() {
+        this.isWaitingNextAction = false;
+        if (this.currentSessionIndex >= this.sessionQuestions.length) {
+            alert('すべての問題が終了しました。');
+            this.switchTab('home');
+            return;
+        }
+
+        const rawQ = this.sessionQuestions[this.currentSessionIndex];
+        this.fetchActualQuestion(rawQ);
+
+        const badgeEl = document.getElementById('choice-pool-badge');
+        const now = Date.now();
+        if (!this.currentQuestion.hasLearned) {
+            badgeEl.innerText = '[新規]';
+        } else if (now >= this.currentQuestion.nextReviewTime) {
+            badgeEl.innerText = '[要復習]';
+        } else {
+            badgeEl.innerText = '[定着中]';
+        }
+
+        document.getElementById('choice-progress').innerText = `問題 ${this.currentSessionIndex + 1} / ${this.sessionQuestions.length}`;
+        document.getElementById('choice-notebook-name').innerText = this.currentNotebookTitle;
+        document.getElementById('choice-english').innerText = this.currentQuestion.english;
+        document.getElementById('choice-result').innerHTML = '';
+        document.getElementById('choice-next-btn-container').classList.add('hidden');
+        document.getElementById('choice-skip-bar').classList.remove('hidden');
+
+        document.getElementById('choice-speech-btn').onclick = () => this.speak(this.currentQuestion.english);
+
+        let allJps = [];
+        this.getUserData().notebooks.forEach(nb => {
+            nb.questions.forEach(q => {
+                if (q.japanese !== this.currentQuestion.japanese && !allJps.includes(q.japanese)) {
+                    allJps.push(q.japanese);
+                }
+            });
+        });
+        const fallbackDummies = ["理解する、把握する", "迅速な、素早い", "改善する、高める", "重要な要素"];
+        allJps = [...allJps, ...fallbackDummies].sort(() => Math.random() - 0.5);
+
+        const options = [this.currentQuestion.japanese, allJps[0], allJps[1], allJps[2]].sort(() => Math.random() - 0.5);
+
+        const container = document.getElementById('choice-options-container');
+        container.innerHTML = '';
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'quiz-choice-btn';
+            btn.innerText = opt;
+            btn.onclick = () => App.checkChoiceAnswer(opt);
+            container.appendChild(btn);
+        });
+
+        this.startQuestionTimer('choice-timer');
+    },
+
+    checkChoiceAnswer(selectedAnswer) {
+        if (this.isWaitingNextAction) return;
+        this.stopQuestionTimer();
+        const elapsedSeconds = parseFloat(((Date.now() - this.questionStartTime) / 1000).toFixed(1));
+        const isCorrect = (selectedAnswer === this.currentQuestion.japanese);
+
+        const sm2Result = this.applySM2Algorithm(isCorrect, elapsedSeconds);
+        this.logHistory('choice', this.currentQuestion.english, isCorrect, elapsedSeconds, sm2Result.isSlow);
+
+        const resEl = document.getElementById('choice-result');
+        const intervalMsg = this.isFastSimulation 
+            ? `次回: 約${sm2Result.interval * 10}秒後` 
+            : `次回: 約${sm2Result.interval}日後`;
+
+        document.querySelectorAll('.quiz-choice-btn').forEach(btn => btn.disabled = true);
+        document.getElementById('choice-skip-bar').classList.add('hidden');
+
+        if (isCorrect) {
+            this.playCorrectSound();
+            this.speak(this.currentQuestion.english);
+            resEl.innerHTML = `
+                <div><span class="judgment-symbol correct">◯</span> <strong>正解 (${elapsedSeconds}s)</strong></div>
+                <div style="font-size: 16px; margin-top: 6px;">和訳: <strong>${this.currentQuestion.japanese}</strong></div>
+                <div style="color:var(--text-sub); font-size:12px; margin-top: 4px;">間隔スケジュール: [${intervalMsg}]</div>
+            `;
+        } else {
+            // 不正解時は文全体を表示し、文全体を自動読み上げ
+            this.speak(this.currentQuestion.english);
+            resEl.innerHTML = `
+                <div><span class="judgment-symbol wrong">×</span> <strong>不正解</strong></div>
+                <div style="font-size: 16px; margin-top: 6px;">正解の和訳: <strong>${this.currentQuestion.japanese}</strong></div>
+                <div style="font-size: 14px; margin-top: 4px; color:var(--text-sub);">正解の英文: <strong>${this.currentQuestion.english}</strong></div>
+            `;
+        }
+
+        this.isWaitingNextAction = true;
+        document.getElementById('choice-next-btn-container').classList.remove('hidden');
+    },
+
+    /* ============================
+       3. 日英マッチングタスク
+       ============================ */
+    loadMatchingTask() {
+        const size = Math.min(5, this.sessionQuestions.length);
+        let pool = [];
+        for (let i = 0; i < size; i++) {
+            let idx = (this.currentSessionIndex + i) % this.sessionQuestions.length;
+            pool.push(this.sessionQuestions[idx]);
+        }
+
+        const nbTitle = this.sessionMode === 'all_review' ? '自動抽出' : this.getUserData().notebooks.find(n => n.id === this.selectedNotebookId).title;
+        document.getElementById('matching-notebook-name').innerText = nbTitle;
+        document.getElementById('matching-result').innerText = '';
+        document.getElementById('matching-next-btn-container').classList.add('hidden');
+
+        const jps = pool.map((q, i) => ({ id: q.id, text: q.japanese, index: i }));
+        const ens = pool.map((q, i) => ({ id: q.id, text: q.english, index: i }));
+
+        jps.sort(() => Math.random() - 0.5);
+        ens.sort(() => Math.random() - 0.5);
+
+        const jpCol = document.getElementById('matching-jp-column');
+        const enCol = document.getElementById('matching-en-column');
+        jpCol.innerHTML = ''; enCol.innerHTML = '';
+
+        this.matchingSelectedJp = null;
+        this.matchingSelectedEn = null;
+
+        jps.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'matching-item';
+            div.innerText = item.text;
+            div.dataset.id = item.id;
+            div.onclick = () => App.selectMatchingItem(div, 'jp');
+            jpCol.appendChild(div);
+        });
+
+        ens.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'matching-item';
+            div.innerText = item.text;
+            div.dataset.id = item.id;
+            div.onclick = () => App.selectMatchingItem(div, 'en');
+            enCol.appendChild(div);
+        });
+    },
+
+    selectMatchingItem(el, type) {
+        if (el.classList.contains('matched')) return;
+
+        if (type === 'jp') {
+            document.querySelectorAll('#matching-jp-column .matching-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+            this.matchingSelectedJp = el;
+        } else {
+            document.querySelectorAll('#matching-en-column .matching-item').forEach(i => i.classList.remove('selected'));
+            el.classList.add('selected');
+            this.matchingSelectedEn = el;
+            this.speak(el.innerText);
+        }
+
+        if (this.matchingSelectedJp && this.matchingSelectedEn) {
+            const jpId = this.matchingSelectedJp.dataset.id;
+            const enId = this.matchingSelectedEn.dataset.id;
+
+            const rawQ = this.sessionQuestions.find(q => q.id == jpId);
+            this.fetchActualQuestion(rawQ);
+
+            if (jpId === enId) {
+                this.playCorrectSound();
+                this.matchingSelectedJp.classList.remove('selected');
+                this.matchingSelectedEn.classList.remove('selected');
+                this.matchingSelectedJp.classList.add('matched');
+                this.matchingSelectedEn.classList.add('matched');
+
+                this.applySM2Algorithm(true, 3.0);
+                this.logHistory('matching', this.currentQuestion.english, true, 3.0, false);
+                
+                this.matchingSelectedJp = null;
+                this.matchingSelectedEn = null;
+
+                const totalItems = document.querySelectorAll('.matching-item').length;
+                const matchedItems = document.querySelectorAll('.matching-item.matched').length;
+                if (totalItems === matchedItems) {
+                    document.getElementById('matching-result').innerHTML = `
+                        <div><span class="judgment-symbol correct">◯</span> <strong>全ペア成立！</strong></div>
+                    `;
+                    document.getElementById('matching-next-btn-container').classList.remove('hidden');
+                }
+            } else {
+                this.speak(this.currentQuestion.english);
+                document.getElementById('matching-result').innerHTML = `
+                    <div><span class="judgment-symbol wrong" style="font-size:32px;">×</span> <strong>ミスマッチ</strong> (正解の英文: ${this.currentQuestion.english})</div>
+                `;
+                this.applySM2Algorithm(false, 0);
+                this.logHistory('matching', this.currentQuestion.english, false, 0, false);
+
+                const jEl = this.matchingSelectedJp;
+                const eEl = this.matchingSelectedEn;
+                setTimeout(() => {
+                    jEl.classList.remove('selected');
+                    eEl.classList.remove('selected');
+                }, 400);
+
+                this.matchingSelectedJp = null;
+                this.matchingSelectedEn = null;
+            }
+        }
+    },
+
+    finishMatchingSession() {
+        this.currentSessionIndex += 5;
+        if (this.currentSessionIndex >= this.sessionQuestions.length) {
+            alert('全セッションが終了しました。');
+            this.switchTab('home');
+        } else {
+            this.loadMatchingTask();
+        }
+    },
+
+    /* ============================
+       SM-2 アルゴリズム計算
+       ============================ */
+    applySM2Algorithm(isCorrect, elapsedSeconds) {
+        const q = this.currentQuestion;
+        q.hasLearned = true;
+
+        const isSlow = elapsedSeconds > 5.0;
+
+        let quality = 0;
+        if (!isCorrect) {
+            quality = 1;
+        } else if (isSlow) {
+            quality = 3;
+        } else {
+            quality = 5;
+        }
+
+        let newEf = q.ef + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02));
+        if (newEf < 1.3) newEf = 1.3;
+        q.ef = newEf;
+
+        if (quality < 3) {
+            q.rep = 0;
+            q.interval = 1;
+        } else {
+            if (q.rep === 0) {
+                q.interval = 1;
+            } else if (q.rep === 1) {
+                q.interval = 6;
+            } else {
+                q.interval = Math.round(q.interval * q.ef);
+            }
+            q.rep += 1;
+
+            if (isSlow && q.interval > 1) {
+                q.interval = Math.max(1, Math.round(q.interval * 0.7));
+            }
+        }
+
+        const unitMs = this.getDayUnitMs();
+        q.nextReviewTime = Date.now() + (q.interval * unitMs);
+
+        this.save();
+        return { isSlow, quality, interval: q.interval };
+    },
+
+    logHistory(mode, english, isCorrect, elapsedSeconds, penaltyApplied) {
+        this.getUserData().history.push({
+            timestamp: Date.now(),
+            notebookTitle: this.currentNotebookTitle,
+            mode: mode,
+            english: english,
+            isCorrect: isCorrect,
+            elapsedSeconds: elapsedSeconds,
+            penaltyApplied: !!penaltyApplied
+        });
+        this.save();
+    }
+};
+
+window.onload = () => App.init();
+</script>
+</body>
+</html>
